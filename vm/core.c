@@ -9,8 +9,8 @@
 #include "utils.h"
 
 // Read source file
-char* readFile(const char* path) {
-    FILE* file = fopen(path, "r");
+char *readFile(const char *path) {
+    FILE *file = fopen(path, "r");
     if (file == NULL) {
         IO_ERROR("Could`t open file \"%s\".\n", path);
     }
@@ -18,7 +18,7 @@ char* readFile(const char* path) {
     struct stat fileStat;
     stat(path, &fileStat);
     size_t fileSize = fileStat.st_size;
-    char* fileContent = (char*)malloc(fileSize + 1);
+    char *fileContent = (char *) malloc(fileSize + 1);
     if (fileContent == NULL) {
         MEM_ERROR("Could`t allocate memory for reading file \"%s\".\n", path);
     }

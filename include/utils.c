@@ -13,7 +13,7 @@
 // 1 申请内存
 // 2 修改空间大小
 // 3 释放内存
-void* memManager(VM* vm, void* ptr, uint32_t oldSize, uint32_t newSize) {
+void *memManager(VM *vm, void *ptr, uint32_t oldSize, uint32_t newSize) {
     vm->allocatedBytes += newSize - oldSize;
 
     //避免realloc(NULL, 0)定义的新地址,此地址不能被释放
@@ -39,11 +39,14 @@ uint32_t ceilToPowerOf2(uint32_t v) {
 }
 
 DEFINE_BUFFER_METHOD(String)
+
 DEFINE_BUFFER_METHOD(Int)
+
 DEFINE_BUFFER_METHOD(Char)
+
 DEFINE_BUFFER_METHOD(Byte)
 
-void symbolTableClear(VM* vm, SymbolTable* buffer) {
+void symbolTableClear(VM *vm, SymbolTable *buffer) {
     uint32_t idx = 0;
     while (idx < buffer->count) {
         memManager(vm, buffer->datas[idx++].str, 0, 0);
@@ -52,8 +55,8 @@ void symbolTableClear(VM* vm, SymbolTable* buffer) {
 }
 
 //通用报错函数
-void errorReport(void* parser,
-                 ErrorType errorType, const char* fmt, ...) {
+void errorReport(void *parser,
+                 ErrorType errorType, const char *fmt, ...) {
     char buffer[DEFAULT_BUfFER_SIZE] = {'\0'};
     va_list ap;
     va_start(ap, fmt);
@@ -69,8 +72,8 @@ void errorReport(void* parser,
         case ERROR_LEX:
         case ERROR_COMPILE:
             ASSERT(parser != NULL, "parser is null!");
-            fprintf(stderr, "%s:%d \"%s\"\n", ((Parser*)parser)->file,
-                    ((Parser*)parser)->preToken.lineNo, buffer);
+            fprintf(stderr, "%s:%d \"%s\"\n", ((Parser *) parser)->file,
+                    ((Parser *) parser)->preToken.lineNo, buffer);
             break;
         case ERROR_RUNTIME:
             fprintf(stderr, "%s\n", buffer);

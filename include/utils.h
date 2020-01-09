@@ -26,7 +26,7 @@ void *memManager(VM *vm, void *ptr, uint32_t oldSize, uint32_t newSize);
 uint32_t ceilToPowerOf2(uint32_t v);
 
 typedef struct {
-    char* str;
+    char *str;
     uint32_t length;
 } String;
 
@@ -47,7 +47,7 @@ typedef struct {
    } type##Buffer;\
    void type##BufferInit(type##Buffer* buf);\
    void type##BufferFillWrite(VM* vm, \
-	 type##Buffer* buf, type data, uint32_t fillCount);\
+     type##Buffer* buf, type data, uint32_t fillCount);\
    void type##BufferAdd(VM* vm, type##Buffer* buf, type data);\
    void type##BufferClear(VM* vm, type##Buffer* buf);
 
@@ -61,13 +61,13 @@ typedef struct {
     type##Buffer* buf, type data, uint32_t fillCount) {\
         uint32_t newCounts = buf->count + fillCount;\
         if (newCounts > buf-> capacity) {\
-	        size_t oldSize = buf->capacity * sizeof(type);\
-	        buf->capacity = ceilToPowerOf2(newCounts);\
-	        size_t newSize = buf->capacity * sizeof(type);\
-	        ASSERT(newSize > oldSize, "faint...memory allocate!");\
-	        buf->datas = (type*)memManager(vm, buf->datas, oldSize, newSize);\
-	    }\
-	    uint32_t cnt = 0;\
+            size_t oldSize = buf->capacity * sizeof(type);\
+            buf->capacity = ceilToPowerOf2(newCounts);\
+            size_t newSize = buf->capacity * sizeof(type);\
+            ASSERT(newSize > oldSize, "faint...memory allocate!");\
+            buf->datas = (type*)memManager(vm, buf->datas, oldSize, newSize);\
+        }\
+        uint32_t cnt = 0;\
         while (cnt < fillCount) {\
             buf->datas[buf->count++] = data;\
             cnt++;\
@@ -85,12 +85,15 @@ typedef struct {
     }
 
 DECLARE_BUFFER_TYPE(String)
+
 #define SymbolTable StringBuffer
 typedef uint8_t Byte;
 typedef char Char;
 typedef int Int;
 DECLARE_BUFFER_TYPE(Int)
+
 DECLARE_BUFFER_TYPE(Char)
+
 DECLARE_BUFFER_TYPE(Byte)
 
 typedef enum {
@@ -101,10 +104,10 @@ typedef enum {
     ERROR_RUNTIME
 } ErrorType;
 
-void errorReport(void* parser,
-                 ErrorType errorType, const char* fmt, ...);
+void errorReport(void *parser,
+                 ErrorType errorType, const char *fmt, ...);
 
-void symbolTableClear(VM*, SymbolTable* buffer);
+void symbolTableClear(VM *, SymbolTable *buffer);
 
 #define IO_ERROR(...)\
    errorReport(NULL, ERROR_IO, __VA_ARGS__)
