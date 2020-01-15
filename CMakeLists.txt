@@ -7,13 +7,15 @@ include_directories(./include)
 include_directories(./parser)
 include_directories(./vm)
 include_directories(./cli)
+include_directories(./object)
 
 aux_source_directory(./cli DIR_CLI)
 aux_source_directory(./include DIR_INCLUDE)
 aux_source_directory(./parser DIR_PARSER)
 aux_source_directory(./vm DIR_VM)
+aux_source_directory(./object DIR_OBJ)
 
-add_executable(crab ${DIR_INCLUDE} ${DIR_PARSER} ${DIR_VM} ${DIR_CLI})
+add_executable(crab ${DIR_INCLUDE} ${DIR_PARSER} ${DIR_VM} ${DIR_CLI} ${DIR_OBJ})
 
 # add_subdirectory(include)
 # add_subdirectory(parser)
