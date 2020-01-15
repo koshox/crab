@@ -1,6 +1,6 @@
 import people for People
 fun fn() {
-   var p = People.new("kosho", "male")
+   var p = People.new("kosho", "male", 20.0)
    p.sayHi()
 }
 
@@ -12,7 +12,7 @@ class Family < People {
       father = f
       mother = m
       child  = c
-      super("koshox", "male")
+      super("koshox", "male", 25)
    }
 }
 

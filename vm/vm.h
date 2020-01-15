@@ -5,7 +5,7 @@
 #ifndef _VM_VM_H
 #define _VM_VM_H
 
-#include <object_header.h>
+#include "object_header.h"
 #include "common.h"
 
 struct vm {

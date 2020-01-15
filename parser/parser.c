@@ -2,11 +2,12 @@
 // Created by Kosho on 2020/1/6.
 //
 
-#include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "parser.h"
+#include "class.h"
 #include "common.h"
 #include "utils.h"
 #include "unicodeUtf8.h"
@@ -109,6 +110,66 @@ static void parseId(Parser *parser, TokenType type) {
         parser->curToken.type = idOrkeyword(parser->curToken.start, length);
     }
     parser->curToken.length = length;
+}
+
+/**
+ * 解析十六进制数字
+ */
+static void parseHexNum(Parser *parser) {
+    while (isxdigit(parser->curChar)) {
+        getNextChar(parser);
+    }
+}
+
+/**
+ * 解析十进制数字
+ */
+static void parseDecNum(Parser *parser) {
+    while (isdigit(parser->curChar)) {
+        getNextChar(parser);
+    }
+
+    // 若有小数点
+    if (parser->curChar == '.' && isdigit(lookAheadChar(parser))) {
+        getNextChar(parser);
+        while (isdigit(parser->curChar)) { // 解析小数点之后的数字
+            getNextChar(parser);
+        }
+    }
+}
+
+/**
+ * 解析八进制
+ */
+static void parseOctNum(Parser *parser) {
+    while (parser->curChar >= '0' && parser->curChar < '8') {
+        getNextChar(parser);
+    }
+}
+
+/**
+ * 解析八进制 十进制 十六进制 仅支持前缀形式
+ */
+static void parseNum(Parser *parser) {
+    // 十六进制
+    if (parser->curChar == '0' && matchNextChar(parser, 'x')) {
+        getNextChar(parser);  // 跳过'x'
+        parseHexNum(parser);
+        parser->curToken.value =
+                NUM_TO_VALUE(strtol(parser->curToken.start, NULL, 16));
+    } else if (parser->curChar == '0'
+               && isdigit(lookAheadChar(parser))) {  // 八进制
+        parseOctNum(parser);
+        parser->curToken.value =
+                NUM_TO_VALUE(strtol(parser->curToken.start, NULL, 8));
+    } else { // 十进制
+        parseDecNum(parser);
+        parser->curToken.value = NUM_TO_VALUE(strtod(parser->curToken.start, NULL));
+    }
+    // nextCharPtr会指向第1个不合法字符的下一个字符,因此-1
+    parser->curToken.length =
+            (uint32_t) (parser->nextCharPtr - parser->curToken.start - 1);
+    parser->curToken.type = TOKEN_NUM;
 }
 
 /**
@@ -223,7 +284,9 @@ static void parseString(Parser *parser) {
         }
     }
 
-    // TODO
+    // 识别到的字符串新建字符串对象存储到curToken的value中
+    ObjString *objString = newObjString(parser->vm, (const char *) str.datas, str.count);
+    parser->curToken.value = OBJ_TO_VALUE(objString);
     ByteBufferClear(parser->vm, &str);
 }
 
@@ -277,10 +340,12 @@ static void skipComment(Parser *parser) {
 
 void getNextToken(Parser *parser) {
     parser->preToken = parser->curToken;
+    // 跳过待识别单词之前的空格
     skipBlanks(parser);
     parser->curToken.type = TOKEN_EOF;
     parser->curToken.length = 0;
     parser->curToken.start = parser->nextCharPtr - 1;
+    parser->curToken.value = VT_TO_VALUE(VT_UNDEFINED);
     while (parser->curChar != '\0') {
         switch (parser->curChar) {
             case ',':
@@ -406,12 +471,13 @@ void getNextToken(Parser *parser) {
                 // 处理变量名及数字
                 // 进入此分支的字符肯定是数字或变量名的首字符
                 // 后面会调用相应函数把其余字符一并解析
-                // 不过识别数字需要一些依赖,目前暂时去掉
 
                 // 首字符是字母或'_'则是变量名
                 if (isalnum(parser->curChar) || parser->curChar == '_') {
                     // 解析变量名
                     parseId(parser, TOKEN_UNKNOWN);
+                } else if (isdigit(parser->curChar)) { // 数字
+                    parseNum(parser);
                 } else {
                     if (parser->curChar == '#' && matchNextChar(parser, '!')) {
                         skipAline(parser);
@@ -466,7 +532,7 @@ void consumeNextToken(Parser *parser, TokenType expected, const char *errMsg) {
 
 // sourceCode未必来自于文件file,有可能只是个字符串,
 // file仅用作跟踪待编译的代码的标识,方便报错
-void initParser(VM *vm, Parser *parser, const char *file, const char *sourceCode) {
+void initParser(VM *vm, Parser *parser, const char *file, const char *sourceCode, ObjModule *objModule) {
     parser->file = file;
     parser->sourceCode = sourceCode;
     parser->curChar = *parser->sourceCode;
@@ -478,4 +544,5 @@ void initParser(VM *vm, Parser *parser, const char *file, const char *sourceCode
     parser->preToken = parser->curToken;
     parser->interpolationExpectRightParenNum = 0;
     parser->vm = vm;
+    parser->curModule = objModule;
 }

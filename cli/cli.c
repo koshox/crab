@@ -22,7 +22,8 @@ static void runFile(const char *path) {
     const char *sourceCode = readFile(path);
 
     struct parser parser;
-    initParser(vm, &parser, path, sourceCode);
+    // TODO 模块先临时写NULL
+    initParser(vm, &parser, path, sourceCode, NULL);
 
     while (parser.curToken.type != TOKEN_EOF) {
         getNextToken(&parser);

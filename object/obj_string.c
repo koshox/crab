@@ -42,7 +42,7 @@ ObjString *newObjString(VM *vm, const char *str, uint32_t length) {
     ObjString *objString = ALLOCATE_EXTRA(vm, ObjString, length + 1);
 
     if (objString != NULL) {
-        initObjHeader(vm, &objString, OT_STRING, vm->stringClass);
+        initObjHeader(vm, &objString->objHeader, OT_STRING, vm->stringClass);
         objString->value.length = length;
 
         // 支持空字符串: str为null,length为0
