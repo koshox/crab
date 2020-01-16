@@ -10,6 +10,7 @@
 
 struct vm {
     Class* stringClass;
+    Class* listClass;
     Class* fnClass;
     uint32_t allocatedBytes; // 累计已分配的内存量
     ObjHeader* allObjects; //所有已分配对象链表
