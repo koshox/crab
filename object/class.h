@@ -39,6 +39,7 @@ typedef enum {
 
 #define VALUE_TO_OBJ(value) (value.objHeader)
 #define VALUE_TO_OBJSTR(value) ((ObjString*)VALUE_TO_OBJ(value))
+#define VALUE_TO_OBJRANGE(value) ((ObjRange*)VALUE_TO_OBJ(value))
 #define VALUE_TO_OBJFN(value) ((ObjFn*)VALUE_TO_OBJ(value))
 #define VALUE_TO_OBJCLOSURE(value) ((ObjClosure*)VALUE_TO_OBJ(value))
 #define VALUE_TO_CLASS(value) ((Class*)VALUE_TO_OBJ(value))
@@ -60,7 +61,7 @@ typedef enum {
 /**
  * Native function ptr
  */
-typedef bool (*Primitive)(VM* vm, Value* args);
+typedef bool (*Primitive)(VM *vm, Value *args);
 
 typedef struct {
     // union中的值由type的值决定
@@ -70,7 +71,7 @@ typedef struct {
         Primitive primFn;
 
         // 指向脚本代码编译后的ObjClosure或ObjFn
-        ObjClosure* obj;
+        ObjClosure *obj;
     };
 } Method;
 
@@ -82,13 +83,13 @@ DECLARE_BUFFER_TYPE(Method)
 struct class {
     ObjHeader objHeader;
     // 父类
-    struct class* superClass;
+    struct class *superClass;
     // 类的字段数, 包括基类的字段数
     uint32_t fieldNum;
     // 类的方法
     MethodBuffer methods;
     // 类名
-    ObjString* name;
+    ObjString *name;
 };
 
 typedef union {
@@ -99,5 +100,7 @@ typedef union {
 
 #define CAPACITY_GROW_FACTOR 4
 #define MIN_CAPACITY 64
+
+bool valueIsEqual(Value a, Value b);
 
 #endif
