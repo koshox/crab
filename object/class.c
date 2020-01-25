@@ -38,18 +38,49 @@ bool valueIsEqual(Value a, Value b) {
     //以下处理类型相同的对象
     //若对象同为字符串
     if (a.objHeader->type == OT_STRING) {
-        ObjString* strA = VALUE_TO_OBJSTR(a);
-        ObjString* strB = VALUE_TO_OBJSTR(b);
+        ObjString *strA = VALUE_TO_OBJSTR(a);
+        ObjString *strB = VALUE_TO_OBJSTR(b);
         return (strA->value.length == strB->value.length &&
                 memcmp(strA->value.start, strB->value.start, strA->value.length) == 0);
     }
 
     //若对象同为range
     if (a.objHeader->type == OT_RANGE) {
-        ObjRange* rgA = VALUE_TO_OBJRANGE(a);
-        ObjRange* rgB = VALUE_TO_OBJRANGE(b);
+        ObjRange *rgA = VALUE_TO_OBJRANGE(a);
+        ObjRange *rgB = VALUE_TO_OBJRANGE(b);
         return (rgA->from == rgB->from && rgA->to == rgB->to);
     }
 
     return false;  //其它对象不可比较
+}
+
+/**
+ * 定义一个裸类, 即没有元数据的类
+ */
+Class *newRawClass(VM *vm, const char *name, uint32_t fieldNum) {
+    Class *class = ALLOCATE(vm, Class);
+    initObjHeader(vm, &class->objHeader, OT_CLASS, NULL);
+    class->name = newObjString(vm, name, strlen(name));
+    class->fieldNum = fieldNum;
+    class->superClass = NULL;
+    MethodBufferInit(&class->methods);
+
+    return class;
+}
+
+inline Class *getClassOfObj(VM *vm, Value object) {
+    switch (object.type) {
+        case VT_NULL:
+            return vm->nullClass;
+        case VT_FALSE:
+        case VT_TRUE:
+            return vm->boolClass;
+        case VT_NUM:
+            return vm->numClass;
+        case VT_OBJ:
+            return VALUE_TO_OBJ(object)->class;
+        default:
+            NOT_REACHED();
+    }
+    return NULL;
 }

@@ -19,7 +19,7 @@ ObjModule *newObjModule(VM *vm, const char *modName) {
     initObjHeader(vm, &objModule->objHeader, OT_MODULE, NULL);
 
     StringBufferInit(&objModule->moduleVarName);
-    ValueBufferInit(&objModule->moduleValue);
+    ValueBufferInit(&objModule->moduleVarValue);
 
     objModule->name = NULL;
     if (modName != NULL) {

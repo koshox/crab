@@ -338,6 +338,7 @@ static void skipComment(Parser *parser) {
     skipBlanks(parser);
 }
 
+
 void getNextToken(Parser *parser) {
     parser->preToken = parser->curToken;
     // 跳过待识别单词之前的空格
@@ -473,7 +474,7 @@ void getNextToken(Parser *parser) {
                 // 后面会调用相应函数把其余字符一并解析
 
                 // 首字符是字母或'_'则是变量名
-                if (isalnum(parser->curChar) || parser->curChar == '_') {
+                if (isalpha(parser->curChar) || parser->curChar == '_') {
                     // 解析变量名
                     parseId(parser, TOKEN_UNKNOWN);
                 } else if (isdigit(parser->curChar)) { // 数字

@@ -9,22 +9,29 @@
 #include "parser.h"
 #include "token.h"
 
+void printToken(const char *path, const VM *vm, const char *sourceCode);
+
 static void runFile(const char *path) {
     const char *lastSlash = strrchr(path, '/');
     if (lastSlash != NULL) {
         char *root = (char *) malloc(lastSlash - path + 2);
         memcpy(root, path, lastSlash - path + 1);
         root[lastSlash - path + 1] = '\0';
-        //rootDir = root;
+        rootDir = root;
     }
 
     VM *vm = newVM();
     const char *sourceCode = readFile(path);
 
+    executeModule(vm, OBJ_TO_VALUE(newObjString(vm, path, strlen(path))), sourceCode);
+
+    // printToken(path, vm, sourceCode);
+}
+
+void printToken(const char *path, const VM *vm, const char *sourceCode) {
     struct parser parser;
     // TODO 模块先临时写NULL
     initParser(vm, &parser, path, sourceCode, NULL);
-
     while (parser.curToken.type != TOKEN_EOF) {
         getNextToken(&parser);
         printf("%dL: %s [", parser.curToken.lineNo, tokenArray[parser.curToken.type]);

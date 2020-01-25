@@ -15,7 +15,7 @@ typedef struct {
     // 模块中的模块变量名
     SymbolTable moduleVarName;
     // 模块中的模块变量值
-    ValueBuffer moduleValue;
+    ValueBuffer moduleVarValue;
     // 模块名
     ObjString *name;
 } ObjModule;

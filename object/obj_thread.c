@@ -36,7 +36,6 @@ ObjThread *newObjThread(VM *vm, ObjClosure *objClosure) {
 
     resetThread(objThread, objClosure);
     return objThread;
-
 }
 
 /**
