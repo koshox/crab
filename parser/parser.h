@@ -5,6 +5,7 @@
 #ifndef _PARSER_PARSER_H
 #define _PARSER_PARSER_H
 
+#include "compiler.h"
 #include "meta_obj.h"
 #include "common.h"
 #include "vm.h"
@@ -32,7 +33,7 @@ typedef enum {
     TOKEN_RETURN,           //'return'
     TOKEN_NULL,               //'null'
 
-    //以下是关于类和模块导入的token
+    // 关于类和模块导入的token
             TOKEN_CLASS,               //'class'
     TOKEN_THIS,               //'this'
     TOKEN_STATIC,           //'static'
@@ -40,7 +41,7 @@ typedef enum {
     TOKEN_SUPER,               //'super'
     TOKEN_IMPORT,           //'import'
 
-    //分隔符
+    // 分隔符
             TOKEN_COMMA,           //','
     TOKEN_COLON,           //':'
     TOKEN_LEFT_PAREN,       //'('
@@ -52,14 +53,14 @@ typedef enum {
     TOKEN_DOT,           //'.'
     TOKEN_DOT_DOT,       //'..'
 
-    //简单双目运算符
+    // 简单双目运算符
             TOKEN_ADD,           //'+'
     TOKEN_SUB,           //'-'
     TOKEN_MUL,           //'*'
     TOKEN_DIV,           //'/'
     TOKEN_MOD,           //'%'
 
-    //赋值运算符
+    // 赋值运算符
             TOKEN_ASSIGN,       //'='
 
     // 位运算符
@@ -74,7 +75,7 @@ typedef enum {
     TOKEN_LOGIC_OR,       //'||'
     TOKEN_LOGIC_NOT,       //'!'
 
-    //关系操作符
+    // 关系操作符
             TOKEN_EQUAL,           //'=='
     TOKEN_NOT_EQUAL,       //'!='
     TOKEN_GREATE,       //'>'
@@ -84,7 +85,7 @@ typedef enum {
 
     TOKEN_QUESTION,       //'?'
 
-    //文件结束标记,仅词法分析时使用
+    // 文件结束标记, 仅词法分析时使用
             TOKEN_EOF           //'EOF'
 } TokenType;
 
@@ -105,13 +106,11 @@ struct parser {
     Token curToken;
     Token preToken;
 
-    // 当前正在编译的模块
-    ObjModule *curModule;
+    ObjModule *curModule;                 // 当前编译模块
+    CompileUnit *curCompileUnit;          // 当前编译单元
 
-    //处于内嵌表达式之中时,期望的右括号数量.
-    //用于跟踪小括号对儿的嵌套
-    int interpolationExpectRightParenNum;
-    struct parser *parent;  //指向父parser
+    int interpolationExpectRightParenNum; // 处于内嵌表达式之中时, 期望的右括号数量, 用于跟踪小括号对的嵌套
+    struct parser *parent;                // 指向父parser
     VM *vm;
 };
 
