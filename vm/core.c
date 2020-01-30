@@ -8,6 +8,7 @@
 #include "vm.h"
 #include "utils.h"
 #include "compiler.h"
+#include "core.script.inc"
 
 // 根目录
 char *rootDir = NULL;
@@ -199,7 +200,7 @@ ObjThread *loadModule(VM *vm, Value moduleName, const char *moduleCode) {
 /**
  * 执行模块
  */
-VMResult excuteModule(VM *vm, Value moduleName, const char *moduleCode) {
+VMResult executeModule(VM *vm, Value moduleName, const char *moduleCode) {
     ObjThread *objThread = loadModule(vm, moduleName, moduleCode);
     // TODO
     return VM_RESULT_ERROR;
@@ -231,6 +232,17 @@ int addSymbol(VM *vm, SymbolTable *table, const char *symbol, uint32_t length) {
     string.length = length;
     StringBufferAdd(vm, table, string);
     return table->count - 1;
+}
+
+/**
+ * 确保符号已添加到符号表
+ */
+int ensureSymbolExist(VM *vm, SymbolTable *table, const char *symbol, uint32_t length) {
+    int symbolIndex = getIndexFromSymbolTable(table, symbol, length);
+    if (symbolIndex == -1) {
+        return addSymbol(vm, table, symbol, length);
+    }
+    return symbolIndex;
 }
 
 /**
@@ -308,4 +320,7 @@ void buildCore(VM *vm) {
     vm->objectClass->objHeader.class = objectMetaclass;
     objectMetaclass->objHeader.class = vm->classOfClass;
     vm->classOfClass->objHeader.class = vm->classOfClass; // 元信息类回路,meta类终点
+
+    // 执行核心模块
+    executeModule(vm, CORE_MODULE, coreModuleCode);
 }

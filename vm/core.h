@@ -17,6 +17,8 @@ int getIndexFromSymbolTable(SymbolTable *table, const char *symbol, uint32_t len
 
 int addSymbol(VM *vm, SymbolTable *table, const char *symbol, uint32_t length);
 
+int ensureSymbolExist(VM *vm, SymbolTable *table, const char *symbol, uint32_t length);
+
 void buildCore(VM *vm);
 
 void bindMethod(VM *vm, Class *class, uint32_t index, Method method);
