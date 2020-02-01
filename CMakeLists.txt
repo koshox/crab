@@ -17,6 +17,8 @@ aux_source_directory(./vm DIR_VM)
 aux_source_directory(./object DIR_OBJ)
 aux_source_directory(./compiler DIR_COMPILER)
 
+add_definitions(-fgnu89-inline)
+
 add_executable(crab ${DIR_INCLUDE} ${DIR_PARSER} ${DIR_VM} ${DIR_CLI} ${DIR_OBJ} ${DIR_COMPILER})
 
 # add_subdirectory(include)
