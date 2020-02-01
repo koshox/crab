@@ -418,12 +418,12 @@ static void emitCallBySignature(CompileUnit *cu, Signature *sign, OpCode opcode)
     char signBuffer[MAX_SIGN_LEN];
     uint32_t length = sign2String(sign, signBuffer);
 
-    //确保签名录入到vm->allMethodNames中
+    // 确保签名录入到vm->allMethodNames中
     int symbolIndex = ensureSymbolExist(cu->curParser->vm, \
      &cu->curParser->vm->allMethodNames, signBuffer, length);
     writeOpCodeShortOperand(cu, opcode + sign->argNum, symbolIndex);
 
-    //此时在常量表中预创建一个空slot占位,将来绑定方法时再装入基类
+    // 此时在常量表中预创建一个空slot占位,将来绑定方法时再装入基类
     if (opcode == OPCODE_SUPER0) {
         writeShortOperand(cu, addConstant(cu, VT_TO_VALUE(VT_NULL)));
     }
@@ -791,6 +791,69 @@ static ObjFn *endCompileUnit(CompileUnit *cu) {
     // 下掉本编译单元, 使当前编译单元指向外层编译单元
     cu->curParser->curCompileUnit = cu->enclosingUnit;
     return cu->fn;
+}
+
+// 生成getter或者一般method的调用指令
+static void emitGetterMethodCall(CompileUnit *cu, Signature *sign, OpCode opCode) {
+    Signature newSign;
+    newSign.type = SIGN_GETTER;
+    newSign.name = sign->name;
+    newSign.length = sign->length;
+    newSign.argNum = 0;
+
+    // 如果是method, 有可能有参数列表, 在生成调用方法的指令前必须把参数入栈
+    // 否则运行方法时除了会获取到错误的参数(即栈中已有数据)外, 还会在从方法返回时, 错误地回收参数空间而导致栈失衡
+
+    // 调用processArgList把实参入栈,供方法使用
+    if (matchToken(cu->curParser, TOKEN_LEFT_PAREN)) {
+        newSign.type = SIGN_METHOD;
+        // 若后面不是')',说明有参数列表
+        if (!matchToken(cu->curParser, TOKEN_RIGHT_PAREN)) {
+            processArgList(cu, &newSign);
+            consumeCurToken(cu->curParser, TOKEN_RIGHT_PAREN, "expect ')' after argument list!");
+        }
+    }
+
+    // 对method来说可能还传入了块参数, 类似于ruby
+    if (matchToken(cu->curParser, TOKEN_LEFT_BRACE)) {
+        newSign.argNum++;
+        // 进入本if块时,上面的if块未必执行过,
+        // 此时newSign.type也许还是GETTER,下面要将其设置为METHOD
+        newSign.type = SIGN_METHOD;
+        CompileUnit fnCU;
+        initCompileUnit(cu->curParser, &fnCU, cu, false);
+
+        Signature tmpFnSign = {SIGN_METHOD, "", 0, 0}; // 临时用于编译函数
+        if (matchToken(cu->curParser, TOKEN_BIT_OR)) {  // 若块参数也有参数
+            processParaList(&fnCU, &tmpFnSign);    // 将形参声明为函数的局部变量
+            consumeCurToken(cu->curParser, TOKEN_BIT_OR, "expect '|' after argument list!");
+        }
+        fnCU.fn->argNum = tmpFnSign.argNum;
+
+        //编译函数体, 将指令流写进该函数自己的指令单元fnCu
+        compileBody(&fnCU, false);
+
+#if DEBUG
+        // 以此函数被传给的方法来命名这个函数, 函数名=方法名+" block arg"
+        char fnName[MAX_SIGN_LEN + 10] = {'\0'}; //"block arg\0"
+        uint32_t len = sign2String(&newSign, fnName);
+        memmove(fnName + len, " block arg", 10);
+        endCompileUnit(&fnCU, fnName, len + 10);
+#else
+        endCompileUnit(&fnCU);
+#endif
+    }
+
+    // 如果是在子类构造函数中
+    if (sign->type == SIGN_CONSTRUCT) {
+        if (newSign.type != SIGN_METHOD) {
+            COMPILE_ERROR(cu->curParser, "the form of supercall is super() or super(arguments)");
+        }
+        newSign.type = SIGN_CONSTRUCT;
+    }
+
+    // 根据签名生成调用指令, 如果上面的三个if都未执行, 此处就是getter调用
+    emitCallBySignature(cu, &newSign, opCode);
 }
 
 // 添加常量并返回其索引
